@@ -4,3 +4,5 @@
 - Block software while generating model (spinning wheel cursor etc...)
 - Save state if no model change ?
 - Choose steps per frame
+- Allow changing plotted variable
+- If IC not changed but touched, don't reset

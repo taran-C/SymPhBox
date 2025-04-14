@@ -8,7 +8,6 @@ using Gtk4
 using Printf
 
 include("models.jl")
-include("initial_conditions.jl")
 
 #Building the window
 ENV["JULIA_NUM_THREADS"] = (2,1)
@@ -25,9 +24,10 @@ params = Dict{String, Any}((
 	 "model" => nothing,
 	 "var" => nothing, #plotted + edited var
 	 "ics" => nothing,
+	 "icid" => nothing,
 
 	 #Display params
-	 "palette" => :phase,#:balance,
+	 "palette" => :balance,
 	 ))
 
 #FROM GR.jl examples (gtk4_plots_ex)
@@ -36,7 +36,12 @@ function _plot(ctx, w, h)
 	ENV["GKSconid"] = @sprintf("%lu", UInt64(ctx.ptr))
 
 	gr(show=true)
-	heatmap(getproperty(params["model"].state, params["var"]), size = (w,h), c=params["palette"])
+	model = params["model"]
+	mesh = model.mesh
+	heatmap(getproperty(model.state, params["var"])[mesh.nh+1:mesh.nx-mesh.nh, mesh.nh+1:mesh.ny-mesh.nh], 
+		size = (w,h), 
+		c=params["palette"],
+		aspect_ratio = 1)
 end
 
 function do_step(widget)
@@ -73,20 +78,12 @@ end
 
 function change_ics(widget, thing)
 	stop(widget)
-
-	ic = selected_string(widget)
-
-	if ic != params["ics"]
-		
-		params["ics"] = ic
-
-		if ic == "Dipole"
-			set_dipole(params["var"], params["model"])
-		elseif ic == "Tripole"
-			set_tripole(params["var"], params["model"])
-		else
-			println("Not implemented")
-		end
+	dd = b["ic_dropdown"]
+	
+	if length(Gtk4.model(dd)) >0
+		ic = selected_string(dd)
+	
+		params["ics"][ic](params["model"])
 		
 		draw(params["canvas"])
 	end
@@ -100,6 +97,8 @@ function create_model(widget, thing)
 	model_string = selected_string(b["model_dropdown"])
 	if model_string == "EulerPsi"
 		model_func = get_eulerpsi
+	elseif model_string == "RSW"
+		model_func = get_rsw
 	else
 		println("Not Implemented")
 	end
@@ -125,14 +124,24 @@ function create_model(widget, thing)
 	end
 
 	#Creating the model
-	model, var = model_func(step_func, interp_func)
+	model, var, ics = model_func(step_func, interp_func)
 	params["model"] = model
 	params["var"] = var
 	
 	#Initial conditions
-	params["ics"] = nothing
-	change_ics(b["ic_dropdown"], thing)
+	params["ics"] = ics
+	strlist = Gtk4.model(b["ic_dropdown"])
+	if params["icid"] != nothing
+		signal_handler_disconnect(b["ic_dropdown"], params["icid"])
+	end
 
+	empty!(strlist)
+	for key in keys(ics)
+		push!(strlist, key)
+	end
+	params["icid"] = signal_connect(change_ics, ic_dropdown, "notify::selected")
+	selected_string!(b["ic_dropdown"], collect(keys(ics))[1])
+	
 	#(re)draw canvas
 	draw(params["canvas"])
 end
@@ -167,7 +176,7 @@ signal_connect(create_model, integrator_dropdown, "notify::selected")
 signal_connect(create_model, interp_dropdown, "notify::selected")
 
 ic_dropdown = b["ic_dropdown"]
-signal_connect(change_ics, ic_dropdown, "notify::selected")
+params["icid"] = signal_connect(change_ics, ic_dropdown, "notify::selected")
 
 #Creating the initial model
 create_model(nothing, nothing)
