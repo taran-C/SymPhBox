@@ -15,6 +15,17 @@ function set_dipole_euler(model)
 	end
 end
 
+function set_vortex_merge_euler(model)
+	#Initial Conditions
+	reset_state(model.state)
+
+	for i in model.mesh.nh+1:model.mesh.nx-model.mesh.nh, j in model.mesh.nh+1:model.mesh.ny-model.mesh.nh
+		x = model.mesh.xc[i,j]
+		y = model.mesh.yc[i,j]
+		model.state.omega[i,j] = (gaussian(x, y, 0.5,0.5-0.15,0.05) + gaussian(x,y, 0.5, 0.5+0.15, 0.05)) * model.mesh.msk2d[i,j]
+	end
+end
+
 function set_tripole_euler(model)
 	#Initial Conditions
 	reset_state(model.state)
@@ -25,6 +36,25 @@ function set_tripole_euler(model)
 		model.state.omega[i,j] = tripole(x, y, 0.5,0.5,0.3,0.05) * model.mesh.msk2d[i,j]
 	end
 end
+
+function set_random_vortices(model)
+	reset_state(model.state)
+	n_vort = 10
+	
+	vorts = []
+	for i in 1:n_vort
+		push!(vorts,(2*rand(Float64)-1, rand(Float64), rand(Float64), 0.1 * rand(Float64)))
+	end
+
+	for i in model.mesh.nh+1:model.mesh.nx-model.mesh.nh, j in model.mesh.nh+1:model.mesh.ny-model.mesh.nh
+		x = model.mesh.xc[i,j]
+		y = model.mesh.yc[i,j]
+		
+		for vort in vorts
+			model.state.omega[i,j] += vort[1] * gaussian(x, y, vort[2], vort[3], vort[4]) * model.mesh.msk2d[i,j]
+		end
+	end
+end	
 
 function get_eulerpsi(step_func, interp_func)
 	#Defining our equation
@@ -73,5 +103,8 @@ function get_eulerpsi(step_func, interp_func)
 	println("Done !")
 	reset_state(model.state)
 
-	return model, :omega, Dict(("Dipole"=>set_dipole_euler, "Tripole"=>set_tripole_euler))
+	return model, :omega, Dict(("Dipole"=>set_dipole_euler, 
+				    "Tripole"=>set_tripole_euler, 
+				   "Soup"=>set_random_vortices,
+				   "VortexMerge"=>set_vortex_merge_euler))
 end

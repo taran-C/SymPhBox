@@ -1,186 +1,285 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.94.1 -->
+<!-- Created with Cambalache 0.96.0 -->
 <interface>
   <!-- interface-name symphbox.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.14"/>
   <object class="GtkWindow" id="main">
     <property name="default-height">800</property>
     <property name="default-width">1200</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon-name">applications-science</property>
     <property name="maximized">True</property>
+    <property name="title">SymPhBox</property>
     <property name="vexpand-set">True</property>
     <child>
-      <object class="GtkPaned" id="main_container">
+      <object class="GtkPaned" id="main_paned">
         <property name="margin-bottom">5</property>
         <property name="margin-end">5</property>
         <property name="margin-start">5</property>
         <property name="margin-top">5</property>
         <child>
-          <object class="GtkGrid">
-            <property name="column-homogeneous">True</property>
-            <property name="column-spacing">5</property>
-            <property name="row-spacing">5</property>
+          <object class="GtkBox" id="parameters_box">
+            <property name="margin-bottom">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-start">5</property>
+            <property name="margin-top">5</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
             <child>
-              <object class="GtkButton" id="play_button">
-                <property name="label">Play</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">1</property>
-                  <property name="row">1</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="stop_button">
-                <property name="label">Stop</property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="column-span">1</property>
-                  <property name="row">1</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="step_button">
-                <property name="label">Step !</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">2</property>
-                  <property name="row">0</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">2</property>
-                  <property name="row">2</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkDropDown" id="model_dropdown">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>EulerPsi</item>
-                      <item>RSW</item>
-                    </items>
+              <object class="GtkFrame" id="model_frame">
+                <property name="child">
+                  <object class="GtkGrid" id="model_grid">
+                    <property name="column-homogeneous">True</property>
+                    <property name="column-spacing">5</property>
+                    <property name="row-homogeneous">True</property>
+                    <property name="row-spacing">5</property>
+                    <child>
+                      <object class="GtkButton" id="gen_model_button">
+                        <property name="icon-name">system-run</property>
+                        <property name="label">Generate model</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">2</property>
+                          <property name="row">0</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="model_label">
+                        <property name="label">Model</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="interp_label">
+                        <property name="label">Interpolation</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="integrator_label">
+                        <property name="label">Integrator</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">3</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkDropDown" id="integrator_dropdown">
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>RK3</item>
+                              <item>EulerForward</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">3</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkDropDown" id="interp_dropdown">
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>Weno5</item>
+                              <item>Upwind5</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkDropDown" id="model_dropdown">
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>EulerPsi</item>
+                              <item>RSW</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="nx_label">
+                        <property name="label">nx</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">4</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="ny_label">
+                        <property name="label">ny</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">5</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ny_entry">
+                        <property name="placeholder-text">50</property>
+                        <property name="text">50</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">5</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="nx_entry">
+                        <property name="placeholder-text">50</property>
+                        <property name="text">50</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">4</property>
+                        </layout>
+                      </object>
+                    </child>
                   </object>
                 </property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="column-span">1</property>
-                  <property name="row">3</property>
-                  <property name="row-span">1</property>
-                </layout>
+                <property name="label">Model parameters</property>
               </object>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="label">Model</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">1</property>
-                  <property name="row">3</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkDropDown" id="ic_dropdown">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>Dipole</item>
-                      <item>Tripole</item>
-                    </items>
+              <object class="GtkFrame" id="run_frame">
+                <property name="child">
+                  <object class="GtkGrid" id="run_grid">
+                    <property name="column-homogeneous">True</property>
+                    <property name="column-spacing">5</property>
+                    <property name="orientation">vertical</property>
+                    <property name="row-spacing">5</property>
+                    <child>
+                      <object class="GtkDropDown" id="ic_dropdown">
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>Dipole</item>
+                              <item>Tripole</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="column-span">1</property>
+                          <property name="row">0</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="ic_label">
+                        <property name="label">Initial Conditions</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="column-span">1</property>
+                          <property name="row">0</property>
+                          <property name="row-span">1</property>
+                        </layout>
+                      </object>
+                    </child>
                   </object>
                 </property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="column-span">1</property>
-                  <property name="row">4</property>
-                  <property name="row-span">1</property>
-                </layout>
+                <property name="label">Run parameters</property>
+                <property name="label-xalign">-0.0</property>
               </object>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="label">Initial Conditions</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">1</property>
-                  <property name="row">4</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSeparator">
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">2</property>
-                  <property name="row">5</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkDropDown" id="integrator_dropdown">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>RK3</item>
-                      <item>EulerForward</item>
-                    </items>
+              <object class="GtkFrame" id="plot_frame">
+                <property name="label">Plot parameters</property>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="column-homogeneous">True</property>
+                    <property name="row-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel" id="color_label">
+                        <property name="label">Color Map</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">0</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkDropDown" id="cmap_dropdown">
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>Balance</item>
+                              <item>Viridis</item>
+                              <item>Magma</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">0</property>
+                        </layout>
+                      </object>
+                    </child>
                   </object>
-                </property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">6</property>
-                </layout>
+                </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <property name="vexpand">True</property>
             <child>
-              <object class="GtkDropDown" id="interp_dropdown">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item>Weno5</item>
-                      <item>Upwind5</item>
-                    </items>
+              <object class="GtkBox">
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkButton" id="stop_button">
+                    <property name="icon-name">media-playback-pause</property>
+                    <property name="tooltip-markup">Pause the simulation</property>
                   </object>
-                </property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">7</property>
-                </layout>
+                </child>
+                <child>
+                  <object class="GtkButton" id="play_button">
+                    <property name="icon-name">media-playback-start</property>
+                    <property name="tooltip-text">Run the simulation</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="step_button">
+                    <property name="icon-name">media-skip-forward</property>
+                    <property name="tooltip-text">Do a step</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="label">Interpolation</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">1</property>
-                  <property name="row">7</property>
-                  <property name="row-span">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label">Integrator</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="column-span">1</property>
-                  <property name="row">6</property>
-                  <property name="row-span">1</property>
-                </layout>
+              <object class="GtkFrame" id="main_container">
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="GtkRevealer"/>
+                </child>
               </object>
             </child>
           </object>

@@ -22,6 +22,9 @@ params = Dict{String, Any}((
 
 	 #Current state of run config
 	 "model" => nothing,
+	 "model_func" => nothing,
+	 "step_func" => nothing,
+	 "interp_func" => nothing,
 	 "var" => nothing, #plotted + edited var
 	 "ics" => nothing,
 	 "icid" => nothing,
@@ -89,45 +92,58 @@ function change_ics(widget, thing)
 	end
 end
 
-#Creating a model and setting it up TODO maybe only generate model once clicked on a validation button
-function create_model(widget, thing)
-	stop(widget)
-
+function change_model(widget, thing)
 	#Model
 	model_string = selected_string(b["model_dropdown"])
 	if model_string == "EulerPsi"
-		model_func = get_eulerpsi
+		params["model_func"] = get_eulerpsi
 	elseif model_string == "RSW"
-		model_func = get_rsw
+		params["model_func"] = get_rsw
 	else
 		println("Not Implemented")
 	end
+end
 
+function change_integrator(widget, thing)
 	#Integrator
 	integ_string = selected_string(b["integrator_dropdown"])
 	if integ_string == "RK3"
-		step_func = rk3step!
+		params["step_func"] = rk3step!
 	elseif integ_string == "EulerForward"
-		step_func = euler_forwardstep!
+		params["step_func"] = euler_forwardstep!
 	else
 		println("Not Implemented")
 	end
+end
 
+function change_interpolation(widget, thing)
 	#Interpolation
 	interp_string = selected_string(b["interp_dropdown"])
 	if interp_string == "Weno5"
-		interp_func = Arrays.weno
+		params["interp_func"] = Arrays.weno
 	elseif interp_string == "Upwind5"
-		interp_func = Arrays.upwind
+		params["interp_func"] = Arrays.upwind
+	else
+		println("Not Implemented")
+	end
+end
+
+function change_palette(widget, thing)
+	palette_string = selected_string(b["cmap_dropdown"])
+	if palette_string == "Balance"
+		params["palette"] = :balance
+	elseif palette_string == "Viridis"
+		params["palette"] = :viridis
+	elseif palette_string == "Magma"
+		params["palette"] = :magma
 	else
 		println("Not Implemented")
 	end
 
-	#Creating the model
-	model, var, ics = model_func(step_func, interp_func)
-	params["model"] = model
-	params["var"] = var
-	
+	draw(params["canvas"])
+end
+
+function populate_ics(ics)	
 	#Initial conditions
 	params["ics"] = ics
 	strlist = Gtk4.model(b["ic_dropdown"])
@@ -141,7 +157,41 @@ function create_model(widget, thing)
 	end
 	params["icid"] = signal_connect(change_ics, ic_dropdown, "notify::selected")
 	selected_string!(b["ic_dropdown"], collect(keys(ics))[1])
-	
+end
+
+function change_mesh(widget)
+	if params["playing"] == false
+		nx = parse(Int, b["nx_entry"].text)
+		ny = parse(Int, b["ny_entry"].text)
+		nh = 3
+		Lx, Ly = (1,1)
+			
+		msk = zeros(nx, ny)
+		msk[nh+1:nx-nh, nh+1:ny-nh] .= 1
+
+		simd = VectorizedCPU(16)
+
+		mesh = Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
+
+		params["model"].mesh = mesh
+		params["model"].state = SymPh.State(params["model"].mesh)
+		change_ics(widget, nothing)
+		#draw(params["canvas"])
+	end
+end
+
+#Creating a model and setting it up TODO maybe only generate model once clicked on a validation button
+function generate_model(widget)
+	stop(widget)
+	#Creating the model
+	model, var, ics = params["model_func"](params["step_func"], params["interp_func"])
+	params["model"] = model
+	params["var"] = var
+
+	populate_ics(ics)
+	change_ics(widget, nothing)
+
+	change_mesh(widget)
 	#(re)draw canvas
 	draw(params["canvas"])
 end
@@ -156,7 +206,7 @@ params["canvas"] = canvas
 
 	_plot(ctx, w, h)
 end
-main_container[2] = canvas
+main_container.child = canvas
 
 #Control Buttons
 step_button = b["step_button"]
@@ -171,15 +221,30 @@ signal_connect(stop, stop_button, "clicked")
 model_dropdown = b["model_dropdown"]
 integrator_dropdown = b["integrator_dropdown"]
 interp_dropdown = b["interp_dropdown"]
-signal_connect(create_model, model_dropdown, "notify::selected")
-signal_connect(create_model, integrator_dropdown, "notify::selected")
-signal_connect(create_model, interp_dropdown, "notify::selected")
+
+signal_connect(change_model, model_dropdown, "notify::selected")
+signal_connect(change_integrator, integrator_dropdown, "notify::selected")
+signal_connect(change_interpolation, interp_dropdown, "notify::selected")
 
 ic_dropdown = b["ic_dropdown"]
 params["icid"] = signal_connect(change_ics, ic_dropdown, "notify::selected")
 
+gen_model_button = b["gen_model_button"]
+signal_connect(generate_model, gen_model_button, "clicked")
+
+cmap_dropdown = b["cmap_dropdown"]
+signal_connect(change_palette, cmap_dropdown, "notify::selected")
+
+nx_entry = b["nx_entry"]
+ny_entry = b["ny_entry"]
+#signal_connect(change_mesh, nx_entry, "changed")
+#signal_connect(change_mesh, ny_entry, "changed")
+
 #Creating the initial model
-create_model(nothing, nothing)
+change_model(nothing, nothing)
+change_integrator(nothing, nothing)
+change_interpolation(nothing, nothing)
+generate_model(nothing)
 
 #Displaying everything
 show(win)
