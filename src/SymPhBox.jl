@@ -71,7 +71,6 @@ function play(widget)
 			end
 		end
 	end
-
 end
 
 function stop(widget)
@@ -159,39 +158,32 @@ function populate_ics(ics)
 	selected_string!(b["ic_dropdown"], collect(keys(ics))[1])
 end
 
-function change_mesh(widget)
-	if params["playing"] == false
-		nx = parse(Int, b["nx_entry"].text)
-		ny = parse(Int, b["ny_entry"].text)
-		nh = 3
-		Lx, Ly = (1,1)
-			
-		msk = zeros(nx, ny)
-		msk[nh+1:nx-nh, nh+1:ny-nh] .= 1
+function get_mesh()
+	nx = parse(Int, b["nx_entry"].text)
+	ny = parse(Int, b["ny_entry"].text)
+	nh = 3
+	Lx, Ly = (1,1)
+		
+	msk = zeros(nx, ny)
+	msk[nh+1:nx-nh, nh+1:ny-nh] .= 1
 
-		simd = VectorizedCPU(16)
+	simd = VectorizedCPU(16)
 
-		mesh = Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
-
-		params["model"].mesh = mesh
-		params["model"].state = SymPh.State(params["model"].mesh)
-		change_ics(widget, nothing)
-		#draw(params["canvas"])
-	end
+	return Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
 end
 
 #Creating a model and setting it up TODO maybe only generate model once clicked on a validation button
 function generate_model(widget)
 	stop(widget)
 	#Creating the model
-	model, var, ics = params["model_func"](params["step_func"], params["interp_func"])
+	mesh = get_mesh()
+	model, var, ics = params["model_func"](params["step_func"], params["interp_func"], mesh)
 	params["model"] = model
 	params["var"] = var
 
 	populate_ics(ics)
 	change_ics(widget, nothing)
 
-	change_mesh(widget)
 	#(re)draw canvas
 	draw(params["canvas"])
 end

@@ -46,7 +46,7 @@ function set_dipole_rsw(model)
 	state.f .=  10 .* ones((mesh.nx,mesh.ny)) .* mesh.A .* mesh.msk2d
 end
 
-function get_rsw(step_func, interp_func)
+function get_rsw(step_func, interp_func, mesh)
 	#Defining our equation
 	@Let h = FormVariable{2, Primal}() #Height * A (h* technically)
 	@Let u = FormVariable{1, Dual}() #Transported velocity
@@ -67,25 +67,6 @@ function get_rsw(step_func, interp_func)
 
 	#Generating the RHS
 	rsw_rhs! = to_kernel(dtu, dth, pv; save = ["zeta", "k"], explparams = explparams)
-
-	#Testing the function
-
-	#Defining the Mesh
-	nx = 50
-	ny = 50
-	nh = 3
-
-	msk = zeros(nx, ny)
-	msk[nh+1:nx-nh, nh+1:ny-nh] .= 1
-
-	Lx, Ly = (1,1)
-
-	#LoopManager
-	scalar = PlainCPU()
-	simd = VectorizedCPU(16)
-	threads = MultiThread(scalar)
-
-	mesh = Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
 
 	#Initial Conditions
 	state = State(mesh)

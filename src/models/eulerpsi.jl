@@ -56,7 +56,7 @@ function set_random_vortices(model)
 	end
 end	
 
-function get_eulerpsi(step_func, interp_func)
+function get_eulerpsi(step_func, interp_func, mesh)
 	#Defining our equation
 	@Let omega = FormVariable{2, Dual}() #Vorticity
 
@@ -72,26 +72,6 @@ function get_eulerpsi(step_func, interp_func)
 
 	#Generating the RHS
 	euler_rhs! = to_kernel(dtomega; save = ["u_x", "u_y", "ι_U_omega"], explparams = explparams, verbose = false)
-
-	#Testing the function
-
-	#Defining the Mesh
-	nx = 50
-	ny = 50
-	nh = 3
-
-	msk = zeros(nx, ny)
-	msk[nh+1:nx-nh, nh+1:ny-nh] .= 1
-	#msk[nx÷2-nx÷5:nx÷2+nx÷5, 2*ny÷10:4*ny÷10] .= 0
-
-	Lx, Ly = (1,1)
-		
-	#LoopManager
-	scalar = PlainCPU()
-	simd = VectorizedCPU(16)
-	threads = MultiThread(scalar)
-	
-	mesh = Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
 
 	#Creating the State
 	state = State(mesh)
