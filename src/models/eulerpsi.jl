@@ -83,8 +83,8 @@ function get_eulerpsi(step_func, interp_func, mesh)
 	println("Done !")
 	reset_state(model.state)
 
-	return model, :omega, Dict(("Dipole"=>set_dipole_euler, 
+	return model, Dict(("Dipole"=>set_dipole_euler, 
 				    "Tripole"=>set_tripole_euler, 
 				   "Soup"=>set_random_vortices,
-				   "VortexMerge"=>set_vortex_merge_euler))
+				   "VortexMerge"=>set_vortex_merge_euler)), (:omega, :psi, :u_x, :u_y)
 end

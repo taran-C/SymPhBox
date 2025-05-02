@@ -34,6 +34,7 @@ params = Dict{String, Any}((
 	 ))
 
 #FROM GR.jl examples (gtk4_plots_ex)
+#TODO adapt to mask
 function _plot(ctx, w, h)
 	ENV["GKS_WSTYPE"] = "142"
 	ENV["GKSconid"] = @sprintf("%lu", UInt64(ctx.ptr))
@@ -41,7 +42,7 @@ function _plot(ctx, w, h)
 	gr(show=true)
 	model = params["model"]
 	mesh = model.mesh
-	heatmap(getproperty(model.state, params["var"])[mesh.nh+1:mesh.nx-mesh.nh, mesh.nh+1:mesh.ny-mesh.nh], 
+	heatmap(getproperty(model.state, Symbol(selected_string(b["vars_dropdown"])))[mesh.nh+2:mesh.nx-mesh.nh-1, mesh.nh+2:mesh.ny-mesh.nh-1], 
 		size = (w,h), 
 		c=params["palette"],
 		aspect_ratio = 1)
@@ -71,6 +72,7 @@ function play(widget)
 			end
 		end
 	end
+
 end
 
 function stop(widget)
@@ -158,6 +160,18 @@ function populate_ics(ics)
 	selected_string!(b["ic_dropdown"], collect(keys(ics))[1])
 end
 
+function populate_vars(vars)	
+	#plottable variables
+	#params["ics"] = vars
+	strlist = Gtk4.model(b["vars_dropdown"])
+	
+	empty!(strlist)
+	for var in vars
+		push!(strlist, String(var))
+	end
+	selected_string!(b["vars_dropdown"], String(vars[1]))
+end
+
 function get_mesh()
 	nx = parse(Int, b["nx_entry"].text)
 	ny = parse(Int, b["ny_entry"].text)
@@ -169,21 +183,33 @@ function get_mesh()
 
 	simd = VectorizedCPU(16)
 
-	return Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
+	mesh = Arrays.Mesh(nx, ny, nh, simd, msk, Lx, Ly)
+	return mesh
+end
+
+function change_mesh(widget)
+	if params["playing"] == false
+		mesh = get_mesh()
+		params["model"].mesh = mesh
+		params["model"].state = SymPh.State(params["model"].mesh)
+		change_ics(widget, nothing)
+		#draw(params["canvas"])
+	end
 end
 
 #Creating a model and setting it up TODO maybe only generate model once clicked on a validation button
 function generate_model(widget)
 	stop(widget)
 	#Creating the model
-	mesh = get_mesh()
-	model, var, ics = params["model_func"](params["step_func"], params["interp_func"], mesh)
+	model, ics, vars = params["model_func"](params["step_func"], params["interp_func"], get_mesh())
 	params["model"] = model
-	params["var"] = var
+	params["var"] = vars[1]
 
+	populate_vars(vars)
 	populate_ics(ics)
 	change_ics(widget, nothing)
 
+	change_mesh(widget)
 	#(re)draw canvas
 	draw(params["canvas"])
 end

@@ -2,5 +2,5 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 0.96.0 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui filename="symphbox.ui" sha256="bff798eb9fab6163f8d50f7a49953cb73b425a4028ae88a676b0d829b202ea8c"/>
+  <ui filename="symphbox.ui" sha256="9e7418c7eace404c9e6358266b188a07f304167b1cf1d2d248e9365f9e043d22"/>
 </cambalache-project>

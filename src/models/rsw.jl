@@ -79,5 +79,5 @@ function get_rsw(step_func, interp_func, mesh)
 	println("Done !")
 	reset_state(model.state)
 	
-	return model, :h, Dict(("Dipole"=>set_dipole_rsw, "Vortex"=>set_vortex_rsw))
+	return model, Dict(("Dipole"=>set_dipole_rsw, "Vortex"=>set_vortex_rsw)), (:h, :u_x, :u_y, :pv)
 end
